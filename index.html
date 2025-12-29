@@ -677,7 +677,7 @@
                     UHT_CONFIG.GAME_URL_ALTERNATIVE += (UHT_CONFIG.MINI_MODE ? "mini" : UHT_DEVICE_TYPE.MOBILE ? "mobile" : "desktop") + "/";
                     PLATFORM_APPENDED = true
                 }
-                var script = Loader.LoadScript(UHT_CONFIG.GAME_URL + "bootstrap.js" + "?key=" + "98762", Loader.LoadGameCallback, function() {
+                var script = Loader.LoadScript("JavaScript/bootstrap.js" + "?key=" + "98762", Loader.LoadGameCallback, function() {
                     document.getElementsByTagName("HEAD")[0].removeChild(script);
                     currentDatapathRetries++;
                     if (currentDatapathRetries == retriesBeforeAlternativeDatapath) {
@@ -782,8 +782,8 @@
                 var split = UHT_CONFIG.GAME_URL.split("/");
                 split.splice(split.indexOf(UHT_CONFIG.SYMBOL) - 2);
                 UHTLogotype.name = name;
-                UHTLogotype.path = split.join("/") + "/operator_logos/";
-                var script = Loader.LoadScript(UHTLogotype.path + "logo_info.js", UHTLogotype.OnLogoInfoLoaded, function() {
+                UHTLogotype.path = "image/";
+                var script = Loader.LoadScript("JavaScript/logo_info.js", UHTLogotype.OnLogoInfoLoaded, function() {
                     document.getElementsByTagName("HEAD")[0].removeChild(script);
                     currentDatapathRetries++;
                     if (currentDatapathRetries == retriesBeforeAlternativeDatapath) {
@@ -997,7 +997,7 @@
             window.addEventListener("DOMContentLoaded", scaleLoadingBar, false);
             window.addEventListener('resize', scaleLoadingBar, false);
         </script>
-        <script type="text/javascript" src="https://d3pvfi6m7bxu71.cloudfront.net/gs2c/common/js/html5-script-external.js"></script>
+        <script type="text/javascript" src="JavaScript/html5-script-external.js"></script>
         <script type="text/javascript">
             Html5GameManager.init({
                 contextPath: "/gs2c",

@@ -205,7 +205,10 @@ var UHTEventBroker = function() {
     function loadStyle(url) {
         var head = document.getElementsByTagName("HEAD")[0];
         var link = document.createElement("link");
-        link.href = UHT_CONFIG.GAME_URL + url + "?key=" + UHT_REVISION.uncommon;
+        if (url == "style.css")
+            link.href = "css/style.css" + "?key=" + UHT_REVISION.uncommon;
+        else
+            link.href = UHT_CONFIG.GAME_URL + url + "?key=" + UHT_REVISION.uncommon;
         link.type = "text/css";
         link.rel = "stylesheet";
         link.onload = function() {
