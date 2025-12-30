@@ -3,75 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gates of Olympus 1000 - Clone</title>
+    <title>Gates of Olympus 1000</title>
     <style>
         body {
             background-color: #1a0b2e;
             color: white;
-            font-family: sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             text-align: center;
             margin: 0;
             overflow: hidden;
-        }
-        #game-container {
-            position: relative;
-            width: 100vw;
-            height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: url('image/background.png') no-repeat center center;
-            background-size: cover;
+            height: 100vh;
         }
-        /* Fallback background if image missing */
-        #game-container.no-bg {
-            background: radial-gradient(circle, #4a1c40 0%, #000000 100%);
+
+        #game-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            /* Try to load the background from public/image/ */
+            background: url('public/image/fbc9c38f-272e-411d-be8f-d20bc002706a.png') no-repeat center center;
+            background-size: cover;
+            filter: brightness(0.6);
+        }
+        /* Fallback if image fails */
+        #game-bg.error {
+            background: radial-gradient(circle, #4a1c40 0%, #1a0520 100%);
+        }
+
+        h1 {
+            margin: 10px 0;
+            font-size: 2.5rem;
+            color: gold;
+            text-shadow: 0 0 10px #ff6600, 2px 2px 0 #000;
+        }
+
+        #game-container {
+            position: relative;
+            display: flex;
+            gap: 20px;
+            align-items: center;
         }
 
         #grid {
             display: grid;
-            grid-template-columns: repeat(6, 1fr);
-            grid-template-rows: repeat(5, 1fr);
-            gap: 5px;
-            width: 80%;
-            max-width: 600px;
-            aspect-ratio: 6/5;
-            background: rgba(0, 0, 0, 0.5);
-            border: 2px solid gold;
+            grid-template-columns: repeat(6, 80px);
+            grid-template-rows: repeat(5, 80px);
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 4px solid #ffd700;
             padding: 10px;
-            border-radius: 10px;
+            border-radius: 12px;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
         }
-        .symbol {
-            width: 100%;
-            height: 100%;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
+
+        .cell {
+            width: 80px;
+            height: 80px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 2em;
-            text-shadow: 0 0 5px black;
+            position: relative;
         }
-        /* Placeholder styling for symbols until we map real images */
-        .sym-0 { color: #aaa; } /* Gem Blue */
-        .sym-1 { color: #0f0; } /* Gem Green */
-        .sym-2 { color: #ff0; } /* Gem Yellow */
-        .sym-3 { color: #f0f; } /* Gem Purple */
-        .sym-4 { color: #f00; } /* Gem Red */
-        .sym-5 { color: gold; } /* Chalice */
-        .sym-6 { color: pink; } /* Ring */
-        .sym-7 { color: orange; } /* Hourglass */
-        .sym-8 { color: cyan; } /* Crown */
-        .sym-9 { color: white; font-weight: bold; text-shadow: 0 0 10px gold;} /* Zeus Scatter */
 
-        #controls {
-            margin-top: 20px;
-            z-index: 10;
+        .symbol {
+            width: 90%;
+            height: 90%;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            filter: drop-shadow(0 4px 4px rgba(0,0,0,0.5));
+            animation: dropIn 0.3s ease-out;
         }
-        button {
-            padding: 15px 40px;
+
+        @keyframes dropIn {
+            0% { transform: translateY(-50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        .symbol.win {
+            animation: pop 0.5s ease-in-out infinite alternate;
+            filter: brightness(1.5) drop-shadow(0 0 10px gold);
+        }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.1); }
+        }
+
+        #panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #555;
+            min-width: 200px;
+        }
+
+        .stat-box {
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #555;
+        }
+        .stat-label { font-size: 0.8em; color: #aaa; }
+        .stat-value { font-size: 1.5em; color: gold; font-weight: bold; }
+
+        button#spin-btn {
+            padding: 15px;
             font-size: 24px;
             background: linear-gradient(to bottom, #ffeb3b, #fbc02d);
             border: 2px solid #fff;
@@ -80,105 +129,335 @@
             color: #3e2723;
             font-weight: bold;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            transition: transform 0.1s;
+            transition: transform 0.1s, filter 0.1s;
         }
-        button:active {
-            transform: scale(0.95);
+        button#spin-btn:hover { filter: brightness(1.1); }
+        button#spin-btn:active { transform: scale(0.95); }
+        button#spin-btn:disabled { filter: grayscale(1); cursor: not-allowed; }
+
+        #message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            color: #fff;
+            font-weight: bold;
+            text-shadow: 0 0 20px #ff00ff;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 100;
         }
-        button:disabled {
-            filter: grayscale(1);
-            cursor: not-allowed;
-        }
-        #win-display {
-            font-size: 32px;
-            color: gold;
-            text-shadow: 0 0 10px orange;
-            min-height: 40px;
-            margin-bottom: 10px;
-        }
+        #message.show { opacity: 1; }
     </style>
 </head>
 <body>
 
-<div id="game-container" class="no-bg">
-    <div id="win-display">Win: 0.00</div>
+<div id="game-bg"></div>
+
+<h1>GATES OF OLYMPUS 1000</h1>
+
+<div id="game-container">
     <div id="grid">
-        <!-- Cells will be injected here -->
+        <!-- Cells generated by JS -->
     </div>
-    <div id="controls">
+
+    <div id="panel">
+        <div class="stat-box">
+            <div class="stat-label">TOTAL WIN</div>
+            <div class="stat-value" id="win-display">0.00</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-label">BALANCE</div>
+            <div class="stat-value">1000.00</div>
+        </div>
         <button id="spin-btn">SPIN</button>
     </div>
 </div>
 
+<div id="message">BIG WIN!</div>
+
 <script>
+    // Configuration
+    const ROWS = 5;
+    const COLS = 6;
+    const SYMBOLS = 10; // 0-9
+
+    // Asset Mapping (UUIDs from repo)
+    // Adjust paths if necessary. Assuming served from root, and assets in public/image/
+    const ASSETS = {
+        0: 'public/image/bdd920d9-9643-4155-8c03-bc9336a166de.png', // Blue
+        1: 'public/image/83435e3b-1000-473d-b962-bd97fcda7c6d.png', // Green
+        2: 'public/image/4a6a81a1-152c-45dd-9385-a8e2adc02e40.png', // Yellow
+        3: 'public/image/7191cc8c-b989-4637-8324-608b32e37e0d.png', // Purple
+        4: 'public/image/c13714f0-cf74-46f1-ab93-d197b08cb044.png', // Red
+        5: 'public/image/3f276f3f-8470-4df1-a516-449799235150.png', // Chalice
+        6: 'public/image/4888e68f-8670-4077-b84d-11a04223ba66.png', // Ring
+        7: 'public/image/10bf8961-45cb-4928-b69b-15e2369ab6c0.png', // Hourglass
+        8: 'public/image/ea1d1db4-8cd8-41a0-b168-c97b3f8982aa.png', // Crown
+        9: 'public/image/9ecc8e5e-efa4-4f81-8573-b19f029fcfbf.png'  // Scatter
+    };
+
+    // Paytable (Pay Anywhere logic)
+    // Base multiplier for 8-9, 10-11, 12+ matches
+    const PAYTABLE = {
+        0: [0.25, 0.75, 2.0],
+        1: [0.4, 0.9, 4.0],
+        2: [0.5, 1.0, 5.0],
+        3: [0.8, 1.2, 8.0],
+        4: [1.0, 1.5, 10.0],
+        5: [1.5, 2.0, 12.0],
+        6: [2.0, 5.0, 15.0],
+        7: [2.5, 10.0, 25.0],
+        8: [10.0, 25.0, 50.0],
+        9: [3.0, 5.0, 100.0] // Scatter pays differently usually but keeping simple
+    };
+
+    const BET = 2.00;
+
+    // State
+    let grid = [];
+    let isSpinning = false;
+    let currentWin = 0;
+
+    // Elements
     const gridEl = document.getElementById('grid');
     const spinBtn = document.getElementById('spin-btn');
     const winDisplay = document.getElementById('win-display');
+    const msgEl = document.getElementById('message');
+    const bgEl = document.getElementById('game-bg');
 
-    // Mappings for available images in 'image/' to symbols
-    // Based on filenames seen in `ls image/` output, most are UUIDs.
-    // Since I don't know exactly which UUID corresponds to which symbol,
-    // I will try to use the `oneworks_logo.png` or other identified ones if possible,
-    // but likely I have to rely on placeholder text or try to load them blindly.
-    // Ideally, we would have renamed them.
-    // For now, I will use CSS classes .sym-X to style them with colors/text.
-    // If you identify specific images, update this array.
-    const symbolImages = {};
-
-    // Initial Empty Grid
-    for(let i=0; i<30; i++) {
-        const cell = document.createElement('div');
-        cell.className = 'symbol';
-        gridEl.appendChild(cell);
-    }
-
-    spinBtn.addEventListener('click', async () => {
-        spinBtn.disabled = true;
-        winDisplay.innerText = "Spinning...";
-
-        try {
-            const res = await fetch('/.netlify/functions/spin');
-            const data = await res.json();
-
-            renderGrid(data.grid);
-
-            if (data.win > 0) {
-                winDisplay.innerText = `WIN: ${data.win.toFixed(2)}`;
-                // Animate win (simple flash)
-                gridEl.style.borderColor = 'white';
-                setTimeout(() => gridEl.style.borderColor = 'gold', 500);
-            } else {
-                winDisplay.innerText = "Good Luck!";
+    // Init
+    function init() {
+        // Create grid cells
+        gridEl.innerHTML = '';
+        for(let r=0; r<ROWS; r++) {
+            grid[r] = [];
+            for(let c=0; c<COLS; c++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                cell.id = `cell-${r}-${c}`;
+                gridEl.appendChild(cell);
+                grid[r][c] = -1; // Empty
             }
-        } catch (e) {
-            console.error("Spin failed", e);
-            winDisplay.innerText = "Error!";
         }
 
-        spinBtn.disabled = false;
-    });
-
-    function renderGrid(symbols) {
-        gridEl.innerHTML = '';
-        symbols.forEach(sym => {
-            const cell = document.createElement('div');
-            cell.className = `symbol sym-${sym}`;
-            cell.innerText = getSymbolChar(sym); // Fallback to text/emoji
-
-            // If we had image mapping:
-            // if(symbolImages[sym]) cell.style.backgroundImage = `url('image/${symbolImages[sym]}')`;
-
-            gridEl.appendChild(cell);
-        });
-    }
-
-    function getSymbolChar(id) {
-        const map = {
-            0: '🔷', 1: '🟩', 2: '🔺', 3: '💜', 4: '🔴',
-            5: '🏆', 6: '💍', 7: '⏳', 8: '👑', 9: '⚡'
+        // Background Error Handling
+        const img = new Image();
+        img.src = 'public/image/fbc9c38f-272e-411d-be8f-d20bc002706a.png';
+        img.onerror = () => {
+            bgEl.classList.add('error');
+            console.warn("Background image failed to load, using fallback.");
         };
-        return map[id] || '?';
+
+        spinBtn.addEventListener('click', startSpin);
     }
+
+    async function startSpin() {
+        if(isSpinning) return;
+        isSpinning = true;
+        spinBtn.disabled = true;
+        currentWin = 0;
+        updateUI();
+
+        // 1. Fill Grid with animation
+        fillGridRandomly();
+        await renderGrid(true);
+        await wait(500);
+
+        // 2. Logic Loop (Tumble)
+        let tumbling = true;
+        while(tumbling) {
+            const wins = checkWins();
+            if(wins.length > 0) {
+                // Highlight Wins
+                highlightWins(wins);
+                const roundWin = calculateWin(wins);
+                currentWin += roundWin;
+                updateUI();
+                await wait(800);
+
+                // Remove and Tumble
+                removeSymbols(wins);
+                await renderGrid(false); // Update to empty/falling state
+                await wait(300);
+
+                dropSymbols();
+                fillEmptySpots();
+                await renderGrid(true); // Show new state
+                await wait(500);
+            } else {
+                tumbling = false;
+            }
+        }
+
+        if(currentWin > 0) {
+            showMessage(`WIN ${currentWin.toFixed(2)}`);
+        }
+
+        isSpinning = false;
+        spinBtn.disabled = false;
+    }
+
+    function fillGridRandomly() {
+        for(let r=0; r<ROWS; r++) {
+            for(let c=0; c<COLS; c++) {
+                // Weighted random: lower symbols more frequent
+                const rand = Math.random();
+                let sym = 0;
+                if(rand < 0.5) sym = Math.floor(Math.random() * 5); // 0-4 (Gems)
+                else if(rand < 0.8) sym = Math.floor(Math.random() * 4) + 5; // 5-8 (High)
+                else sym = 9; // Scatter
+
+                // Override for testing sometimes
+                // sym = Math.floor(Math.random() * SYMBOLS);
+
+                grid[r][c] = sym;
+            }
+        }
+    }
+
+    function checkWins() {
+        // Count frequencies
+        const counts = {};
+        for(let r=0; r<ROWS; r++) {
+            for(let c=0; c<COLS; c++) {
+                const sym = grid[r][c];
+                if(sym === -1) continue;
+                counts[sym] = (counts[sym] || 0) + 1;
+            }
+        }
+
+        const winSymbols = [];
+        for(const [sym, count] of Object.entries(counts)) {
+            // Pay Anywhere rule: 8+ matching symbols (4+ for Scatter usually, but let's say 8 for simplicity or adjust)
+            // Real Gates of Olympus: Scatter pays on 4+, others on 8+
+            const s = parseInt(sym);
+            if(s === 9 && count >= 4) {
+                winSymbols.push({symbol: s, count: count});
+            } else if (s !== 9 && count >= 8) {
+                winSymbols.push({symbol: s, count: count});
+            }
+        }
+        return winSymbols;
+    }
+
+    function calculateWin(wins) {
+        let total = 0;
+        wins.forEach(w => {
+            const sym = w.symbol;
+            const count = w.count;
+            let multiplier = 0;
+
+            // Determine tier
+            if(sym === 9) { // Scatter
+                if(count >= 6) multiplier = PAYTABLE[sym][2];
+                else if(count === 5) multiplier = PAYTABLE[sym][1];
+                else multiplier = PAYTABLE[sym][0];
+            } else {
+                if(count >= 12) multiplier = PAYTABLE[sym][2];
+                else if(count >= 10) multiplier = PAYTABLE[sym][1];
+                else multiplier = PAYTABLE[sym][0];
+            }
+
+            total += BET * multiplier;
+        });
+        return total;
+    }
+
+    function highlightWins(wins) {
+        // Find cells participating in win
+        const winningSyms = new Set(wins.map(w => w.symbol));
+        for(let r=0; r<ROWS; r++) {
+            for(let c=0; c<COLS; c++) {
+                if(winningSyms.has(grid[r][c])) {
+                    const cell = document.getElementById(`cell-${r}-${c}`);
+                    const img = cell.querySelector('.symbol');
+                    if(img) img.classList.add('win');
+                }
+            }
+        }
+    }
+
+    function removeSymbols(wins) {
+        const winningSyms = new Set(wins.map(w => w.symbol));
+        for(let r=0; r<ROWS; r++) {
+            for(let c=0; c<COLS; c++) {
+                if(winningSyms.has(grid[r][c])) {
+                    grid[r][c] = -1; // Explode
+                }
+            }
+        }
+    }
+
+    function dropSymbols() {
+        for(let c=0; c<COLS; c++) {
+            let writeRow = ROWS - 1;
+            for(let r=ROWS-1; r>=0; r--) {
+                if(grid[r][c] !== -1) {
+                    grid[writeRow][c] = grid[r][c];
+                    if(writeRow !== r) grid[r][c] = -1;
+                    writeRow--;
+                }
+            }
+        }
+    }
+
+    function fillEmptySpots() {
+        for(let r=0; r<ROWS; r++) {
+            for(let c=0; c<COLS; c++) {
+                if(grid[r][c] === -1) {
+                    grid[r][c] = Math.floor(Math.random() * SYMBOLS); // Refill randomly
+                }
+            }
+        }
+    }
+
+    async function renderGrid(animate = false) {
+        for(let r=0; r<ROWS; r++) {
+            for(let c=0; c<COLS; c++) {
+                const cell = document.getElementById(`cell-${r}-${c}`);
+                const sym = grid[r][c];
+
+                // Clear content
+                cell.innerHTML = '';
+
+                if(sym !== -1) {
+                    const img = document.createElement('div');
+                    img.className = 'symbol';
+                    // Use CSS image
+                    img.style.backgroundImage = `url('${ASSETS[sym]}')`;
+                    // Fallback text
+                    // img.innerText = sym;
+
+                    if(animate) {
+                         // Add a small delay based on row for cascade effect
+                         img.style.animationDelay = `${r * 0.05}s`;
+                    }
+
+                    cell.appendChild(img);
+                }
+            }
+        }
+    }
+
+    function updateUI() {
+        winDisplay.innerText = currentWin.toFixed(2);
+    }
+
+    function showMessage(text) {
+        msgEl.innerText = text;
+        msgEl.classList.add('show');
+        setTimeout(() => msgEl.classList.remove('show'), 2000);
+    }
+
+    function wait(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    init();
+
 </script>
 
 </body>
